@@ -1,36 +1,81 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+## AI + Web3 Wallet Assistant
 
-## Getting Started
+Production-ready starter built with:
 
-First, run the development server:
+- Next.js (App Router)
+- TypeScript
+- Tailwind CSS
+- Moralis API for wallet data
+- Etherscan fallback for wallet data resilience
+- Hugging Face Inference API (free tier) for human-readable wallet insights
+
+## Project Structure
+
+```text
+app/
+  api/analyze-wallet/route.ts
+  page.tsx
+components/
+  ui/
+  features/
+lib/
+  web3/
+  ai/
+  utils/
+types/
+```
+
+## Setup
+
+1. Install dependencies:
+
+```bash
+npm install
+```
+
+2. Configure environment variables:
+
+```bash
+cp .env.example .env.local
+```
+
+3. Start development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## API Flow
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+`POST /api/analyze-wallet`
 
-## Learn More
+1. Accept wallet address
+2. Fetch balances and transactions from Moralis
+   - Fallback to Etherscan if Moralis network is unreachable
+3. Analyze behavior with rule-based logic
+4. Generate plain-language insights using Hugging Face
+5. Return combined response to UI
 
-To learn more about Next.js, take a look at the following resources:
+### API Validation and Performance
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Request body is validated with `zod`
+- Wallet address is validated as a proper EVM address (`viem`)
+- Responses are cached in-memory for 2 minutes per address to speed up repeated requests
+- Cache metrics endpoint: `GET /api/cache-metrics` (returns hits, misses, active entries, TTL)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Environment Variables
 
-## Deploy on Vercel
+- `MORALIS_API_KEY`
+- `HUGGINGFACE_API_KEY` (optional, recommended for better free-tier limits)
+- `ETHERSCAN_API_KEY` (optional, used for fallback and better limits)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Scripts
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `npm run dev` - local development
+- `npm run build` - production build
+- `npm run start` - start production server
+- `npm run lint` - lint project
+
+# ai-web3-wallet-assistant
