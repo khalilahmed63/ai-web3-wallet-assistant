@@ -187,9 +187,9 @@ Khalil Ahmed
 
 Frontend Engineer building Web3 analytics platforms.
 
-Portfolio: https://www.khalilahmed.dev
-LinkedIn: https://www.linkedin.com/in/khalil-ahmed-308a061a6
-GitHub: https://github.com/khalilahmed63
+- Portfolio: https://www.khalilahmed.dev
+- LinkedIn: https://www.linkedin.com/in/khalil-ahmed-308a061a6
+- GitHub: https://github.com/khalilahmed63
 
 ---
 
