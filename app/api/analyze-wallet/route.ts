@@ -7,10 +7,11 @@ import {
   walletAnalysisCache,
   type AnalyzeWalletResponse,
 } from "@/lib/utils/wallet-analysis-cache";
-import { getWalletData } from "@/lib/web3/moralis";
+import { getWalletData, SUPPORTED_CHAINS } from "@/lib/web3/moralis";
 
 const analyzeWalletSchema = z.object({
   address: z.string().trim().min(1, "Wallet address is required."),
+  chain: z.enum(SUPPORTED_CHAINS).default("eth"),
 });
 
 export async function POST(request: Request) {
@@ -25,7 +26,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const address = parsed.data.address;
+    const { address, chain } = parsed.data;
 
     if (!isAddress(address)) {
       return NextResponse.json(
@@ -34,7 +35,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const cacheKey = address.toLowerCase();
+    const cacheKey = `${chain}:${address.toLowerCase()}`;
     const cachedResponse = walletAnalysisCache.get(cacheKey);
 
     if (cachedResponse) {
@@ -46,7 +47,7 @@ export async function POST(request: Request) {
       });
     }
 
-    const walletData = await getWalletData(address);
+    const walletData = await getWalletData(address, chain);
     const analysis = analyzeWallet(walletData);
     const aiResponse = await generateWalletInsights(analysis);
     const payload: AnalyzeWalletResponse = {

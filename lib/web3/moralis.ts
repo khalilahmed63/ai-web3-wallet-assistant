@@ -3,7 +3,9 @@ import { getRequiredEnv } from "@/lib/utils/env";
 import { getWalletDataFromEtherscan } from "@/lib/web3/etherscan";
 
 const MORALIS_BASE_URL = "https://deep-index.moralis.io/api/v2.2";
-const DEFAULT_CHAIN = "eth";
+export const SUPPORTED_CHAINS = ["eth", "polygon", "base", "arbitrum"] as const;
+export type SupportedChain = (typeof SUPPORTED_CHAINS)[number];
+const DEFAULT_CHAIN: SupportedChain = "eth";
 
 interface MoralisTokenBalanceResponse {
   token_address: string;
@@ -98,7 +100,10 @@ function normalizeTransactions(rows: MoralisTransactionsResponse["result"]): Wal
   }));
 }
 
-export async function getWalletData(address: string): Promise<WalletData> {
+export async function getWalletData(
+  address: string,
+  chain: SupportedChain = DEFAULT_CHAIN,
+): Promise<WalletData> {
   if (!address?.trim()) {
     throw new Error("Wallet address is required.");
   }
@@ -108,10 +113,10 @@ export async function getWalletData(address: string): Promise<WalletData> {
   try {
     const [tokensRaw, txRaw] = await Promise.all([
       moralisFetch<MoralisTokenBalanceResponse[]>(
-        `/${normalizedAddress}/erc20?chain=${DEFAULT_CHAIN}`,
+          `/${normalizedAddress}/erc20?chain=${chain}`,
       ),
       moralisFetch<MoralisTransactionsResponse>(
-        `/${normalizedAddress}?chain=${DEFAULT_CHAIN}&limit=30`,
+          `/${normalizedAddress}?chain=${chain}&limit=30`,
       ),
     ]);
 

@@ -5,8 +5,18 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import type { WalletAnalysis } from "@/types/wallet";
 
+const CHAIN_OPTIONS = [
+  { value: "polygon", label: "Polygon" },
+  { value: "eth", label: "Ethereum" },
+  { value: "base", label: "Base" },
+  { value: "arbitrum", label: "Arbitrum" },
+] as const;
+
+type Chain = (typeof CHAIN_OPTIONS)[number]["value"];
+
 interface AnalyzeWalletApiResponse {
   address: string;
+  chain?: Chain;
   analysis: WalletAnalysis;
   insights: string[];
   riskLevel: "low" | "medium" | "high";
@@ -22,6 +32,7 @@ function formatCurrency(value: number): string {
 
 export function WalletDashboard() {
   const [address, setAddress] = useState("");
+  const [chain, setChain] = useState<Chain>("polygon");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<AnalyzeWalletApiResponse | null>(null);
@@ -35,7 +46,7 @@ export function WalletDashboard() {
       const response = await fetch("/api/analyze-wallet", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ address }),
+        body: JSON.stringify({ address, chain }),
       });
 
       const data = (await response.json()) as AnalyzeWalletApiResponse | { error: string };
@@ -80,6 +91,25 @@ export function WalletDashboard() {
         </Card>
 
         <Card className="border-slate-300/20 bg-slate-900/45">
+          <div className="mb-3 flex flex-wrap gap-2">
+            {CHAIN_OPTIONS.map((option) => {
+              const selected = chain === option.value;
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => setChain(option.value)}
+                  className={`rounded-xl border px-3 py-1.5 text-sm transition ${
+                    selected
+                      ? "border-cyan-300/50 bg-cyan-400/15 text-cyan-200"
+                      : "border-slate-600/70 bg-slate-900/75 text-slate-300 hover:border-cyan-400/40 hover:text-slate-100"
+                  }`}
+                >
+                  {option.label}
+                </button>
+              );
+            })}
+          </div>
           <div className="flex flex-col gap-4 md:flex-row">
             <input
               value={address}
@@ -126,6 +156,10 @@ export function WalletDashboard() {
             <Card>
               <h2 className="text-lg font-semibold text-white">Key Stats</h2>
               <div className="mt-4 space-y-3 text-sm text-slate-200">
+                <p className="flex items-center justify-between gap-4">
+                  <span className="text-slate-400">Network</span>
+                  <span className="font-medium uppercase">{chain}</span>
+                </p>
                 <p className="flex items-center justify-between gap-4">
                   <span className="text-slate-400">Risk Level</span>
                   <span className="rounded-full bg-white/10 px-2.5 py-1 text-xs uppercase">
