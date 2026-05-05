@@ -1,9 +1,10 @@
 import { InMemoryTtlCache } from "@/lib/utils/cache";
-import type { WalletAnalysis } from "@/types/wallet";
+import type { TokenBalance, WalletAnalysis } from "@/types/wallet";
 
 export type AnalyzeWalletResponse = {
   address: string;
   analysis: WalletAnalysis;
+  tokens: TokenBalance[];
   insights: string[];
   riskLevel: "low" | "medium" | "high";
 };

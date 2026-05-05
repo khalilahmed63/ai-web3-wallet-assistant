@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import type { WalletAnalysis } from "@/types/wallet";
+import type { TokenBalance, WalletAnalysis } from "@/types/wallet";
 
 const CHAIN_OPTIONS = [
   { value: "polygon", label: "Polygon" },
@@ -13,11 +13,66 @@ const CHAIN_OPTIONS = [
 ] as const;
 
 type Chain = (typeof CHAIN_OPTIONS)[number]["value"];
+const MAIN_TOKEN_SYMBOLS = new Set([
+  "ETH",
+  "WETH",
+  "MATIC",
+  "POL",
+  "WMATIC",
+  "BTC",
+  "WBTC",
+  "USDC",
+  "USDT",
+  "DAI",
+  "ARB",
+  "LINK",
+  "UNI",
+  "AAVE",
+  "TEL",
+  "BNB",
+  "SOL",
+  "XRP",
+  "ADA",
+  "DOGE",
+  "SHIB",
+  "PEPE",
+  "TRX",
+  "LDO",
+  "MKR",
+]);
+const TOKEN_ICONS: Record<string, string> = {
+  ETH: "◆",
+  WETH: "◇",
+  MATIC: "⬣",
+  POL: "⬢",
+  WMATIC: "⬡",
+  BTC: "₿",
+  WBTC: "₿",
+  USDC: "$",
+  USDT: "$",
+  DAI: "$",
+  ARB: "A",
+  LINK: "L",
+  UNI: "U",
+  AAVE: "A",
+  TEL: "T",
+  BNB: "B",
+  SOL: "S",
+  XRP: "X",
+  ADA: "A",
+  DOGE: "D",
+  SHIB: "S",
+  PEPE: "P",
+  TRX: "T",
+  LDO: "L",
+  MKR: "M",
+};
 
 interface AnalyzeWalletApiResponse {
   address: string;
   chain?: Chain;
   analysis: WalletAnalysis;
+  tokens: TokenBalance[];
   insights: string[];
   riskLevel: "low" | "medium" | "high";
 }
@@ -30,12 +85,21 @@ function formatCurrency(value: number): string {
   }).format(value);
 }
 
+function formatTokenBalance(value: number): string {
+  return new Intl.NumberFormat("en-US", {
+    maximumFractionDigits: 4,
+  }).format(value);
+}
+
 export function WalletDashboard() {
   const [address, setAddress] = useState("");
   const [chain, setChain] = useState<Chain>("polygon");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<AnalyzeWalletApiResponse | null>(null);
+  const mainTokens = (result?.tokens ?? [])
+    .filter((token) => MAIN_TOKEN_SYMBOLS.has(token.symbol.toUpperCase()))
+    .sort((a, b) => b.usdValue - a.usdValue);
 
   const onAnalyze = async () => {
     setLoading(true);
@@ -208,6 +272,45 @@ export function WalletDashboard() {
                     </p>
                   </div>
                 ))}
+              </div>
+            </Card>
+
+            <Card className="lg:col-span-3">
+              <div className="flex items-center justify-between gap-3">
+                <h2 className="text-lg font-semibold text-white">Main Token Holdings</h2>
+                <span className="text-sm text-slate-300">
+                  {mainTokens.length} token{mainTokens.length === 1 ? "" : "s"}
+                </span>
+              </div>
+              <div className="mt-4 space-y-2">
+                {mainTokens.length === 0 ? (
+                  <p className="rounded-xl border border-white/10 bg-white/5 p-3 text-sm text-slate-300">
+                    No main tokens found for this wallet on the selected chain.
+                  </p>
+                ) : (
+                  mainTokens.slice(0, 20).map((token) => (
+                    <div
+                      key={token.tokenAddress}
+                      className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/5 p-3"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full border border-cyan-300/30 bg-cyan-400/10 text-sm font-semibold text-cyan-200">
+                          {TOKEN_ICONS[token.symbol.toUpperCase()] ?? token.symbol.slice(0, 1)}
+                        </div>
+                        <div>
+                          <p className="font-medium text-white">{token.symbol}</p>
+                          <p className="text-xs text-slate-400">{token.name}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm text-slate-200">
+                          {formatTokenBalance(token.balanceFormatted)}
+                        </p>
+                        <p className="text-xs text-slate-400">{formatCurrency(token.usdValue)}</p>
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             </Card>
           </div>

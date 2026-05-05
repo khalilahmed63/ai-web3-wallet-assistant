@@ -53,6 +53,7 @@ export async function POST(request: Request) {
     const payload: AnalyzeWalletResponse = {
       address,
       analysis,
+      tokens: walletData.tokens,
       insights: aiResponse.insights,
       riskLevel: aiResponse.riskLevel,
     };
